@@ -17,47 +17,46 @@ Start class
 
 $dns = new RSdnsAPI(RS_USER,RS_API_KEY);
 
-  Show all domains avalible
-  $results = $dns->list_domains(50,0);
+ // Show all domains avalible
+ $results = $dns->list_domains(50,0);
  
-  show all domains matching a name
-  $results = $dns->list_domain_search('klwebconsultants.com');
+ // show all domains matching a name
+ $results = $dns->list_domain_search('klwebconsultants.com');
  
-  show domain information by ID
-  $results = $dns->list_domain_details(2868265,true,true);
+ // show domain information by ID
+ $results = $dns->list_domain_details(123456,true,true);
  
-  show all subdomains
-  $results = $dns->list_subdomains(2868265);
+ // show all subdomains
+ $results = $dns->list_subdomains(123456);
  
-  list all records for a domain
-  $results = $dns->list_records(2868265);
+ // list all records for a domain
+ $results = $dns->list_records(123456);
  
-  list a domain records details
-  $results = $dns->list_record_details(2868265,'CNAME-10054774');
- 
- 
-  export domain data Bind9 format
-  $results = $dns->domain_export(2868265);
+ // list a domain records details
+ $results = $dns->list_record_details(123456,'CNAME-123456');
  
  
- 	record helper function
- 	$dns->create_domain_record_helper('a','klwebconsultants.co.uk','192.168.0.1',86400));
+ // export domain data Bind9 format
+ $results = $dns->domain_export(123456);
  
-  make a new dns zone
+ 
+ // record helper function, to be used to feed the create_domain_record function with the records to make
+ $dns->create_domain_record_helper('a','klwebconsultants.co.uk','192.168.0.1',86400));
+ 
+ // make a new dns zone
   $records = array($dns->create_domain_record_helper('MX','klwebconsultants.co.uk','mail.klwebconsultants.co.uk',86400,2),
   					$dns->create_domain_record_helper('a','klwebconsultants.co.uk','192.168.0.1',86400));
   
   $results = $dns->create_domain('klwebconsultants.co.uk', 'paul@klwebconsultants.co.uk', $records);
  
-  add a new record(s) to a dns zone
- 
+ // add a new record(s) to a dns zone
   $records = array($dns->create_domain_record_helper('MX','klwebconsultants.com','mail.klwebconsultants.com',86400,2),
  					$dns->create_domain_record_helper('a','klwebconsultants.com','192.168.0.1',86400));
-  $results = $dns->create_domain_record(2868265,$records);
+ $results = $dns->create_domain_record(123456,$records);
  
- 	delete record
- 	$results = $dns->delete_domain_record(2868265,'CNAME-10054774');
+ // delete record
+ $results = $dns->delete_domain_record(123456,'CNAME-123456');
  
- 	delete domain
- 	$results = $dns->delete_domain($domainID,$deleteSubdomains = true)
+ // delete domain
+ $results = $dns->delete_domain($domainID,$deleteSubdomains = true)
  
