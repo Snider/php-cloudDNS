@@ -1,0 +1,63 @@
+PHP API binding to Rackspace Cloud DNS 
+-----------------------------------------
+This is strictly for PHP5 since PHP4 should be forgotten forever.
+
+PLEASE NOTE: This is not finished, tydy etc its released as i could not find a PHP lib 
+			 If this code offends you... great... fork it... fix it... and submit a pull request... 
+			 This does what i need it to so any help sugestions/requests welcome
+
+Server comunication code originally from and slightly adapted, 
+thanks to the work of that author making this was relativly easy
+
+@link https://github.com/eyecreate/Rackspace-Cloud-PHP-Library
+
+Implimented Methods So Far:
+
+Start class
+
+$dns = new RSdnsAPI(RS_USER,RS_API_KEY);
+
+  Show all domains avalible
+  $results = $dns->list_domains(50,0);
+ 
+  show all domains matching a name
+  $results = $dns->list_domain_search('klwebconsultants.com');
+ 
+  show domain information by ID
+  $results = $dns->list_domain_details(2868265,true,true);
+ 
+  show all subdomains
+  $results = $dns->list_subdomains(2868265);
+ 
+  list all records for a domain
+  $results = $dns->list_records(2868265);
+ 
+  list a domain records details
+  $results = $dns->list_record_details(2868265,'CNAME-10054774');
+ 
+ 
+  export domain data Bind9 format
+  $results = $dns->domain_export(2868265);
+ 
+ 
+ 	record helper function
+ 	$dns->create_domain_record_helper('a','klwebconsultants.co.uk','192.168.0.1',86400));
+ 
+  make a new dns zone
+  $records = array($dns->create_domain_record_helper('MX','klwebconsultants.co.uk','mail.klwebconsultants.co.uk',86400,2),
+  					$dns->create_domain_record_helper('a','klwebconsultants.co.uk','192.168.0.1',86400));
+  
+  $results = $dns->create_domain('klwebconsultants.co.uk', 'paul@klwebconsultants.co.uk', $records);
+ 
+  add a new record(s) to a dns zone
+ 
+  $records = array($dns->create_domain_record_helper('MX','klwebconsultants.com','mail.klwebconsultants.com',86400,2),
+ 					$dns->create_domain_record_helper('a','klwebconsultants.com','192.168.0.1',86400));
+  $results = $dns->create_domain_record(2868265,$records);
+ 
+ 	delete record
+ 	$results = $dns->delete_domain_record(2868265,'CNAME-10054774');
+ 
+ 	delete domain
+ 	$results = $dns->delete_domain($domainID,$deleteSubdomains = true)
+ 
