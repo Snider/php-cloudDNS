@@ -4,9 +4,18 @@
  * Rackspace DNS PHP API ...
  * @author paul
  * @copyright Original Webware Limited
+ * @contributor Alon Ben David @ CoolGeex.com (Now supports US API)
+ * 	-	Changes: 
+ *				Class name now rackDNS
+ *				callback function to cycle through registered call backs with timeout in place
+ *				Added support to US rackspace DNS API
+ *				delete_domain Now called delete_domains (accept int for one domain OR array for multiple domains)
+ *				added modify_domain function to modify domain configuration
+ *				added domain_import function to import BIND9 format string
+ *				created a sample.php file with code samples
  */
 
-class RSdnsAPI {
+class rackDNS {
 
 	private $apiEndpoint;
 	private $authEndpoint;
@@ -25,6 +34,13 @@ class RSdnsAPI {
 	const TIMEOUT = 20;
 
 	/**
+	 * Timeout in micro_seconds between API calls
+	 * @var integer
+	 */
+	
+	const SLEEPTIME = 500000; //500000 micro_seconds = 0.5 seconds
+
+	/**
 	 *
 	 * rackspace api version ...
 	 * @var string
@@ -36,7 +52,7 @@ class RSdnsAPI {
 	 * user agent ...
 	 * @var string
 	 */
-	const USER_AGENT = 'Rackspace DNS PHP Binding - OriginalWebware.co.uk';
+	const USER_AGENT = 'Rackspace DNS PHP Binding';
 
 	/**
 	 *
@@ -60,6 +76,13 @@ class RSdnsAPI {
 	const UK_DNS_ENDPOINT = 'https://lon.dns.api.rackspacecloud.com';
 
 	/**
+	 *
+	 * us dns endpoint ...
+	 * @var string
+	 */
+	const US_DNS_ENDPOINT = 'https://dns.api.rackspacecloud.com';
+
+	/**
 	 * Creates a new Rackspace Cloud Servers API object to make calls with
 	 *
 	 * Your API key needs to be generated using the Rackspace Cloud Management
@@ -71,19 +94,19 @@ class RSdnsAPI {
 	 * @param string $user The username of the account to use
 	 * @param string $key The API key to use
 	 */
-	public function __construct($user, $key, $auth_endpoint = self::UK_AUTHURL) {
+	public function __construct($user, $key, $endpoint = 'US') {
 		$this->authUser = $user;
 		$this->authKey = $key;
-
-		$this->authEndpoint = $auth_endpoint;
-		$this->apiEndpoint = null;
+		$this->authEndpoint = $endpoint == 'US' ? self::US_AUTHURL : self::UK_AUTHURL;
+		$this->apiEndpoint = $endpoint == 'US' ? self::US_DNS_ENDPOINT : self::UK_DNS_ENDPOINT;
 		$this->authToken = NULL;
 	}
+
 
 	/**
 	 *
 	 * returns a list of domains ...
-	 * @param int $limit show x reasults
+	 * @param int $limit show x results
 	 * @param int $offset fetch from result x
 	 */
 	public function list_domains($limit = 10, $offset = 0) {
@@ -92,10 +115,11 @@ class RSdnsAPI {
 		return $this->makeApiCall ( $url );
 	}
 
+
 	/**
 	 * list subdomains
 	 * @param string|int $domainID
-	 * @return boolean|Ambigous <multitype:, NULL, mixed>
+	 * @return boolean|Ambiguous <multitype:, NULL, mixed>
 	 */
 	public function list_subdomains($domainID){
 		if ($domainID == false || ! is_int ( $domainID )) {
@@ -108,7 +132,7 @@ class RSdnsAPI {
 	}
 
 	/**
-	 * Enter description here ...
+	 * List domain records
 	 * @param unknown_type $domainID
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
@@ -122,7 +146,7 @@ class RSdnsAPI {
 		return $this->makeApiCall ( $url );
 	}
 	/**
-	 * Enter description here ...
+	 * List domain specific record
 	 * @param unknown_type $domainID
 	 * @param unknown_type $recordID
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
@@ -137,7 +161,7 @@ class RSdnsAPI {
 		return $this->makeApiCall ( $url );
 	}
 	/**
-	 * Enter description here ...
+	 * delete a DNS record from domain by record ID
 	 * @param unknown_type $domainID
 	 * @param unknown_type $recordID
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
@@ -148,63 +172,66 @@ class RSdnsAPI {
 		}
 
 		$url = "/domains/$domainID/records/$recordID";
-
 		$call = $this->makeApiCall ( $url,null,'DELETE' );
 
-
-		//@todo make callback function to cycle through registered call backs
-		if (isset($call ['callbackUrl'])) {
-
+		$timeout = time() + self::TIMEOUT;
+		
+		while(isset($call ['callbackUrl']) && $timeout > time()) {
 			$this->callbacks [] = $call;
-			//@todo make this a while loop with a max timeout
-			sleep ( 10 );
+			usleep( self::SLEEPTIME );
+		
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
-			return $this->makeApiCall ( '/status' . array_pop ( $url ) );
+			$call = $this->makeApiCall ( '/status' . array_pop ( $url ) );
 
-		} else {
-			return $call;
 		}
+		return $call;
 	}
 
 	/**
-	 * Enter description here ...
-	 * @param unknown_type $domainID
+	 * Delete domain DNS records entirely 
+	 * @param integer $domainID or an Array on domains ID's
 	 * @param unknown_type $deleteSubdomains
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
-	public function delete_domain($domainID, $deleteSubdomains = true) {
-		if ($domainID == false || ! is_int ( $domainID ) ) {
+	public function delete_domains($domainID, $deleteSubdomains = true) {
+		if ($domainID == false || (! is_int ( $domainID ) && ! is_array($domainID))) {
 			return false;
 		}
 
-			$deleteSubdomains = ($deleteSubdomains == false) ? 'false' : 'true';
-
-		$url = "/domains/$domainID?deleteSubdomains=$deleteSubdomains";
+		$deleteSubdomains = ($deleteSubdomains == false) ? 'false' : 'true';
+		$url = "/domains";
+		
+		if(! is_array($domainID)){
+			$url.= "/$domainID?deleteSubdomains=$deleteSubdomains";
+		}else{
+			$url.= "?";
+			foreach($domainID as $id){
+				$url.= "id=$id&";
+			}
+			$url.="deleteSubdomains=$deleteSubdomains";
+		}
 
 		$call = $this->makeApiCall ( $url,null,'DELETE' );
 
-
-		//@todo make callback function to cycle through registered call backs
-		if (isset($call ['callbackUrl'])) {
-
+		$timeout = time() + self::TIMEOUT;
+		
+		while(isset($call ['callbackUrl']) && $timeout > time()) {
 			$this->callbacks [] = $call;
-			//@todo make this a while loop with a max timeout
-			sleep ( 10 );
+			usleep( self::SLEEPTIME );
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
-			return $this->makeApiCall ( '/status' . array_pop ( $url ) );
+			$call = $this->makeApiCall ( '/status' . array_pop ( $url ) );
 
-		} else {
-			return $call;
 		}
+		return $call;
 	}
 
 	/**
 	 *
 	 * search domains for domains matching
 	 *
-	 * allows for searching of the avalible domains
+	 * allows for searching of the available domains
 	 * using list_domain_search("klwebconsultants") would return all TLD's
 	 * @param string $domain
 	 */
@@ -221,6 +248,7 @@ class RSdnsAPI {
 	/**
 	 *
 	 * list domain data by domainID ...
+	 * List details for a specific domain, using the showRecords and showSubdomains parameters that specify whether to request information for records and subdomains.
 	 * @param int $domainID
 	 * @param bool $showRecords
 	 * @param bool $showSubdomains
@@ -249,24 +277,94 @@ class RSdnsAPI {
 		}
 
 		$url = "/domains/$domainID/export";
+	 	$call = $this->makeApiCall ( $url );
 
-		$call = $this->makeApiCall ( $url );
-
-		//@todo make callback function to cycle through registered call backs
-		if (isset($call ['callbackUrl'])) {
+		$timeout = time() + self::TIMEOUT;
+		
+		while(isset($call ['callbackUrl']) && $timeout > time()) {
 
 			$this->callbacks [] = $call;
-			//@todo make this a while loop with a max timeout
-			sleep ( 10 );
+			usleep( self::SLEEPTIME );
+
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
-			return $this->makeApiCall ( '/status' . array_pop ( $url ) );
+			$call = $this->makeApiCall ( '/status' . array_pop ( $url ) );
+		}
+		return $call;
+	}
 
-		} else {
+	/**
+	 * modify domain configuration
+	 * @param int $domainID
+	 * @param string $email
+	 * @param int $ttl
+	 * @param string $comment
+	 * @return boolean|array
+	 */
+	public function modify_domain($domainID = false , $email = false , $ttl = 86400 , $comment = 'Modify Domain Using rackDNS API') {
+		if ($domainID == false || ! is_int ( $domainID ) || ! is_int ( $ttl ) || $ttl < 300) {
 			return false;
 		}
+				
+		$postData = array (
+				'ttl' => (string)$ttl,
+				'comment' => (string)$comment,
+				'emailAddress' => (string)$email);
 
+		$url = "/domains/$domainID/";
+		
+		$call = $this->makeApiCall ( $url,$postData,'PUT' );
+
+		$timeout = time() + self::TIMEOUT;		
+		
+		while(isset($call ['callbackUrl']) && $timeout > time()) {
+			$this->callbacks [] = $call;
+			usleep( self::SLEEPTIME );
+
+			$url = explode ( 'status', $call ['callbackUrl'] );
+
+			$call = $this->makeApiCall ( '/status' . array_pop ( $url ) );
+		}
+		return $call;
 	}
+
+	/**
+	 *
+	 * import domain ...
+	 * @param string $records string with BIND9 format
+	 * @param string $comment (option comments field)
+	 */
+	public function domain_import($records , $comment = 'Import Domain Using rackDNS API') {
+		if (!$records) {
+			return false;
+		}
+		
+		$records = str_replace("\r","",$records); //Make sure linux new line in place
+		
+		$postData = array('domains' => array(array(
+						  'comment' => $comment,
+						  'contents' => (string)$records )));
+
+		$url = "/domains/import/";
+
+		$call = $this->makeApiCall ( $url,$postData,'POST' );
+
+/* DEBUG */
+//print_r($call);
+		
+		$timeout = time() + self::TIMEOUT;
+		
+		while(isset($call ['callbackUrl']) && $timeout > time()) {
+			$this->callbacks [] = $call;
+			usleep( self::SLEEPTIME );
+			$url = explode ( 'status', $call ['callbackUrl'] );
+
+			$call = $this->makeApiCall ( '/status' . array_pop ( $url ) );
+		}
+		
+		return $call;
+	}
+
 
 	/**
 	 * creates a new zone ...
@@ -280,7 +378,6 @@ class RSdnsAPI {
 			return false;
 		}
 
-
 		$postData = array('domains' => array(array (
 				'name' => $name,
 				'emailAddress' => $email,
@@ -291,21 +388,20 @@ class RSdnsAPI {
 		$call = $this->makeApiCall ( $url,$postData,'POST' );
 
 		//@todo make callback function to cycle through registered call backs
-		if (isset($call ['callbackUrl'])) {
-
+		$timeout = time() + self::TIMEOUT;
+		
+		while(isset($call ['callbackUrl']) && $timeout > time()) {
 			$this->callbacks [] = $call;
-			//@todo make this a while loop with a max timeout
-			sleep ( 10 );
+			usleep( self::SLEEPTIME );
+
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
-			return $this->makeApiCall ( '/status' . array_pop ( $url ) );
+			$call = $this->makeApiCall ( '/status' . array_pop ( $url ) );
 
-		} else {
-			return $call;
 		}
-
-
+		return $call;
 	}
+	
 	/**
 	 * creates a new record on a existing zone ...
 	 * @param unknown_type $domainID
@@ -325,20 +421,18 @@ class RSdnsAPI {
 		$call = $this->makeApiCall ( $url,$postData,'POST' );
 
 		//@todo make callback function to cycle through registered call backs
-		if (isset($call ['callbackUrl'])) {
-
+		$timeout = time() + self::TIMEOUT;
+		
+		while(isset($call ['callbackUrl']) && $timeout > time()) {
 			$this->callbacks [] = $call;
-			//@todo make this a while loop with a max timeout
-			sleep ( 10 );
+			usleep( self::SLEEPTIME );
+
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
-			return $this->makeApiCall ( '/status' . array_pop ( $url ) );
+			$call = $this->makeApiCall ( '/status' . array_pop ( $url ) );
 
-		} else {
-			return $call;
 		}
-
-
+		return $call;
 	}
 
 	/**
@@ -366,7 +460,6 @@ class RSdnsAPI {
 			$record ['priority'] = (string)$priority;
 		}
 		return $record;
-
 	}
 
 	/**
@@ -421,8 +514,7 @@ class RSdnsAPI {
 
 		$jsonResponse = curl_exec ( $ch );
 		curl_close ( $ch );
-
-		//	 var_dump($jsonResponse);
+				
 		return json_decode ( $jsonResponse, TRUE );
 	}
 
@@ -435,6 +527,7 @@ class RSdnsAPI {
 	 * @return integer The number of bytes in the header line
 	 */
 	private function parseHeader($ch, $header) {
+		
 		preg_match ( "/^HTTP\/1\.[01] (\d{3}) (.*)/", $header, $matches );
 		if (isset ( $matches [1] )) {
 			$this->lastResponseStatus = $matches [1];
@@ -488,8 +581,7 @@ class RSdnsAPI {
 				$account = explode ( '/', $this->serverUrl );
 				$this->account_id = array_pop ( $account );
 				// TODO Replace this with parsing the correct one once the Load Balancer API goes public
-				$this->apiEndpoint = self::UK_DNS_ENDPOINT; // "https://ord.loadbalancers.api.rackspacecloud.com/v1.0/425464";
-
+				//$this->apiEndpoint = self::UK_DNS_ENDPOINT; // "https://ord.loadbalancers.api.rackspacecloud.com/v1.0/425464";
 
 				preg_match ( "/X-Auth-Token: (.*)/", $response, $matches );
 				$this->authToken = trim ( $matches [1] );
@@ -554,31 +646,4 @@ class RSdnsAPI {
 		return $this->lastResponseStatus;
 	}
 
-
-	/**
-	 * Gets the API call limits for this account
-	 *
-	 * There are two types of limits enforced by Rackspace Cloud - rate limits
-	 * and absolute limits.
-	 *
-	 * @return array Absolute and rate limits
-	 */
-	public function limits() {
-		$response = $this->makeServersApiCall ( "/limits" );
-
-		if (in_array ( $this->getLastResponseStatus (), array (
-				200,
-				203 ) ) && isset ( $response ['limits'] )) {
-			return $response ['limits'];
-		}
-
-		return NULL;
-	}
-
-
-
-
-
 }
-
-
