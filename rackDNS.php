@@ -1,18 +1,26 @@
 <?php
 /**
- *
  * Rackspace DNS PHP API ...
- * @author Alon Ben David & paul
- * @copyright CoolGeex.com
- * @contributor Alon Ben David @ CoolGeex.com (Now supports US API)
- * 	-	Changes: 
- *				Class name now rackDNS
- *				callback function to cycle through registered call backs with timeout in place
- *				Added support to US rackspace DNS API
- *				delete_domain Now called delete_domains (accept int for one domain OR array for multiple domains)
- *				added modify_domain function to modify domain configuration
- *				added domain_import function to import BIND9 format string
- *				created a sample.php file with code samples
+ *
+ * Copyright (C) 2011  Paul Lashbrook
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/gpl-3.0.txt>.
+ *
+ *
+ * @author Paul Lashbrook - OriginalWebware.co.uk
+ * @contributor Alon Ben David @ CoolGeex.com
+ *
  */
 
 class rackDNS {
@@ -37,8 +45,9 @@ class rackDNS {
 	 * Timeout in micro_seconds between API calls
 	 * @var integer
 	 */
-	
+
 	const SLEEPTIME = 500000; //500000 micro_seconds = 0.5 seconds
+
 
 	/**
 	 *
@@ -52,7 +61,7 @@ class rackDNS {
 	 * user agent ...
 	 * @var string
 	 */
-	const USER_AGENT = 'Rackspace DNS PHP Binding';
+	const USER_AGENT = 'Rackspace DNS PHP - github.com/snider/php-cloudDNS';
 
 	/**
 	 *
@@ -91,17 +100,21 @@ class rackDNS {
 	 * Authentication is done automatically when making the first API call
 	 * using this object.
 	 *
+	 * @todo add a callback function so if one wanted they could call back minutes or
+	 * 		 hours later as result is saved for 24 hours... could internally use it with an
+	 * 		 option to just return the callback url for the programmer to use later
+	 *
+	 *
 	 * @param string $user The username of the account to use
 	 * @param string $key The API key to use
 	 */
-	public function __construct($user, $key, $endpoint = 'US') {
+	public function __construct($user, $key, $endpoint = 'UK') {
 		$this->authUser = $user;
 		$this->authKey = $key;
 		$this->authEndpoint = $endpoint == 'US' ? self::US_AUTHURL : self::UK_AUTHURL;
 		$this->apiEndpoint = $endpoint == 'US' ? self::US_DNS_ENDPOINT : self::UK_DNS_ENDPOINT;
 		$this->authToken = NULL;
 	}
-
 
 	/**
 	 *
@@ -115,13 +128,12 @@ class rackDNS {
 		return $this->makeApiCall ( $url );
 	}
 
-
 	/**
 	 * list subdomains
 	 * @param string|int $domainID
 	 * @return boolean|Ambiguous <multitype:, NULL, mixed>
 	 */
-	public function list_subdomains($domainID){
+	public function list_subdomains($domainID) {
 		if ($domainID == false || ! is_int ( $domainID )) {
 			return false;
 		}
@@ -136,7 +148,7 @@ class rackDNS {
 	 * @param unknown_type $domainID
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
-	public function list_records($domainID){
+	public function list_records($domainID) {
 		if ($domainID == false || ! is_int ( $domainID )) {
 			return false;
 		}
@@ -151,8 +163,8 @@ class rackDNS {
 	 * @param unknown_type $recordID
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
-	public function list_record_details($domainID,$recordID){
-		if ($domainID == false || ! is_int ( $domainID ) || $recordID == false ) {
+	public function list_record_details($domainID, $recordID) {
+		if ($domainID == false || ! is_int ( $domainID ) || $recordID == false) {
 			return false;
 		}
 
@@ -166,20 +178,20 @@ class rackDNS {
 	 * @param unknown_type $recordID
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
-	public function delete_domain_record($domainID,$recordID){
-		if ($domainID == false || ! is_int ( $domainID ) || $recordID == false ) {
+	public function delete_domain_record($domainID, $recordID) {
+		if ($domainID == false || ! is_int ( $domainID ) || $recordID == false) {
 			return false;
 		}
 
 		$url = "/domains/$domainID/records/$recordID";
-		$call = $this->makeApiCall ( $url,null,'DELETE' );
+		$call = $this->makeApiCall ( $url, null, 'DELETE' );
 
-		$timeout = time() + self::TIMEOUT;
-		
-		while(isset($call ['callbackUrl']) && $timeout > time()) {
+		$timeout = time () + self::TIMEOUT;
+
+		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
 			$this->callbacks [] = $call;
-			usleep( self::SLEEPTIME );
-		
+			usleep ( self::SLEEPTIME );
+
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
 			$call = $this->makeApiCall ( '/status' . array_pop ( $url ) );
@@ -189,36 +201,36 @@ class rackDNS {
 	}
 
 	/**
-	 * Delete domain DNS records entirely 
+	 * Delete domain DNS records entirely
 	 * @param integer $domainID or an Array on domains ID's
 	 * @param unknown_type $deleteSubdomains
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
 	public function delete_domains($domainID, $deleteSubdomains = true) {
-		if ($domainID == false || (! is_int ( $domainID ) && ! is_array($domainID))) {
+		if ($domainID == false || (! is_int ( $domainID ) && ! is_array ( $domainID ))) {
 			return false;
 		}
 
 		$deleteSubdomains = ($deleteSubdomains == false) ? 'false' : 'true';
 		$url = "/domains";
-		
-		if(! is_array($domainID)){
-			$url.= "/$domainID?deleteSubdomains=$deleteSubdomains";
-		}else{
-			$url.= "?";
-			foreach($domainID as $id){
-				$url.= "id=$id&";
+
+		if (! is_array ( $domainID )) {
+			$url .= "/$domainID?deleteSubdomains=$deleteSubdomains";
+		} else {
+			$url .= "?";
+			foreach ( $domainID as $id ) {
+				$url .= "id=$id&";
 			}
-			$url.="deleteSubdomains=$deleteSubdomains";
+			$url .= "deleteSubdomains=$deleteSubdomains";
 		}
 
-		$call = $this->makeApiCall ( $url,null,'DELETE' );
+		$call = $this->makeApiCall ( $url, null, 'DELETE' );
 
-		$timeout = time() + self::TIMEOUT;
-		
-		while(isset($call ['callbackUrl']) && $timeout > time()) {
+		$timeout = time () + self::TIMEOUT;
+
+		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
 			$this->callbacks [] = $call;
-			usleep( self::SLEEPTIME );
+			usleep ( self::SLEEPTIME );
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
 			$call = $this->makeApiCall ( '/status' . array_pop ( $url ) );
@@ -248,7 +260,8 @@ class rackDNS {
 	/**
 	 *
 	 * list domain data by domainID ...
-	 * List details for a specific domain, using the showRecords and showSubdomains parameters that specify whether to request information for records and subdomains.
+	 * List details for a specific domain, using the showRecords and showSubdomains parameters that specify
+	 * whether to request information for records and subdomains.
 	 * @param int $domainID
 	 * @param bool $showRecords
 	 * @param bool $showSubdomains
@@ -277,14 +290,14 @@ class rackDNS {
 		}
 
 		$url = "/domains/$domainID/export";
-	 	$call = $this->makeApiCall ( $url );
+		$call = $this->makeApiCall ( $url );
 
-		$timeout = time() + self::TIMEOUT;
-		
-		while(isset($call ['callbackUrl']) && $timeout > time()) {
+		$timeout = time () + self::TIMEOUT;
+
+		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
 
 			$this->callbacks [] = $call;
-			usleep( self::SLEEPTIME );
+			usleep ( self::SLEEPTIME );
 
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
@@ -301,25 +314,28 @@ class rackDNS {
 	 * @param string $comment
 	 * @return boolean|array
 	 */
-	public function modify_domain($domainID = false , $email = false , $ttl = 86400 , $comment = 'Modify Domain Using rackDNS API') {
+	public function modify_domain($domainID = false, $email = false, $ttl = 86400, $comment = null) {
 		if ($domainID == false || ! is_int ( $domainID ) || ! is_int ( $ttl ) || $ttl < 300) {
 			return false;
 		}
-				
+
 		$postData = array (
-				'ttl' => (string)$ttl,
-				'comment' => (string)$comment,
-				'emailAddress' => (string)$email);
+				'ttl' => ( string ) $ttl,
+				'emailAddress' => ( string ) $email );
 
-		$url = "/domains/$domainID/";
-		
-		$call = $this->makeApiCall ( $url,$postData,'PUT' );
+		if ($comment) {
+			$postData ['comment'] = ( string ) $comment;
+		}
 
-		$timeout = time() + self::TIMEOUT;		
-		
-		while(isset($call ['callbackUrl']) && $timeout > time()) {
+		$url = "/domains/$domainID";
+
+		$call = $this->makeApiCall ( $url, $postData, 'PUT' );
+
+		$timeout = time () + self::TIMEOUT;
+
+		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
 			$this->callbacks [] = $call;
-			usleep( self::SLEEPTIME );
+			usleep ( self::SLEEPTIME );
 
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
@@ -331,40 +347,50 @@ class rackDNS {
 	/**
 	 *
 	 * import domain ...
+	 *
+	 * @todo allow batch importing - domain.com, domain.co.uk, domain3.com etc in one call
+	 *
 	 * @param string $records string with BIND9 format
 	 * @param string $comment (option comments field)
 	 */
-	public function domain_import($records , $comment = 'Import Domain Using rackDNS API') {
-		if (!$records) {
+	public function domain_import($records, $comment = null) {
+		if (! $records) {
 			return false;
 		}
-		
-		$records = str_replace("\r","",$records); //Make sure linux new line in place
-		
-		$postData = array('domains' => array(array(
-						  'comment' => $comment,
-						  'contents' => (string)$records )));
 
-		$url = "/domains/import/";
+		$records = str_replace ( "\r", "", $records ); //Make sure linux new line in place
 
-		$call = $this->makeApiCall ( $url,$postData,'POST' );
 
-/* DEBUG */
-//print_r($call);
-		
-		$timeout = time() + self::TIMEOUT;
-		
-		while(isset($call ['callbackUrl']) && $timeout > time()) {
+		$postData = array (
+				'domains' => array (
+						array (
+
+								'contents' => ( string ) $records ) ) );
+
+		if ($comment) {
+			$postData ['domains'] [0] ['comment'] = ( string ) $comment;
+		}
+
+		$url = "/domains/import";
+
+		$call = $this->makeApiCall ( $url, $postData, 'POST' );
+
+		/* DEBUG */
+		//print_r($call);
+
+
+		$timeout = time () + self::TIMEOUT;
+
+		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
 			$this->callbacks [] = $call;
-			usleep( self::SLEEPTIME );
+			usleep ( self::SLEEPTIME );
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
 			$call = $this->makeApiCall ( '/status' . array_pop ( $url ) );
 		}
-		
+
 		return $call;
 	}
-
 
 	/**
 	 * creates a new zone ...
@@ -378,21 +404,24 @@ class rackDNS {
 			return false;
 		}
 
-		$postData = array('domains' => array(array (
-				'name' => $name,
-				'emailAddress' => $email,
-				'recordsList' => array('records' => $records) )));
+		$postData = array (
+				'domains' => array (
+						array (
+								'name' => $name,
+								'emailAddress' => $email,
+								'recordsList' => array (
+										'records' => $records ) ) ) );
 
 		$url = '/domains';
 
-		$call = $this->makeApiCall ( $url,$postData,'POST' );
+		$call = $this->makeApiCall ( $url, $postData, 'POST' );
 
 		//@todo make callback function to cycle through registered call backs
-		$timeout = time() + self::TIMEOUT;
-		
-		while(isset($call ['callbackUrl']) && $timeout > time()) {
+		$timeout = time () + self::TIMEOUT;
+
+		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
 			$this->callbacks [] = $call;
-			usleep( self::SLEEPTIME );
+			usleep ( self::SLEEPTIME );
 
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
@@ -401,7 +430,7 @@ class rackDNS {
 		}
 		return $call;
 	}
-	
+
 	/**
 	 * creates a new record on a existing zone ...
 	 * @param unknown_type $domainID
@@ -409,23 +438,23 @@ class rackDNS {
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
 	public function create_domain_record($domainID = false, $records = false) {
-		if (! $domainID|| ! is_array ( $records )) {
+		if (! $domainID || ! is_array ( $records )) {
 			return false;
 		}
 
-
-		$postData =  array('records' => $records) ;
+		$postData = array (
+				'records' => $records );
 
 		$url = "/domains/$domainID/records";
 
-		$call = $this->makeApiCall ( $url,$postData,'POST' );
+		$call = $this->makeApiCall ( $url, $postData, 'POST' );
 
 		//@todo make callback function to cycle through registered call backs
-		$timeout = time() + self::TIMEOUT;
-		
-		while(isset($call ['callbackUrl']) && $timeout > time()) {
+		$timeout = time () + self::TIMEOUT;
+
+		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
 			$this->callbacks [] = $call;
-			usleep( self::SLEEPTIME );
+			usleep ( self::SLEEPTIME );
 
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
@@ -451,13 +480,13 @@ class rackDNS {
 		}
 
 		$record = array (
-				'ttl' => (string)$ttl,
-				'data' => (string)$data,
-				'name' => (string)$name,
-				'type' => (string)strtoupper ( $type ) );
+				'ttl' => ( string ) $ttl,
+				'data' => ( string ) $data,
+				'name' => ( string ) $name,
+				'type' => ( string ) strtoupper ( $type ) );
 
 		if ($priority !== false) {
-			$record ['priority'] = (string)$priority;
+			$record ['priority'] = ( string ) $priority;
 		}
 		return $record;
 	}
@@ -496,7 +525,7 @@ class rackDNS {
 		$ch = curl_init ();
 		curl_setopt ( $ch, CURLOPT_URL, $jsonUrl );
 		if ($postData) {
-			curl_setopt ( $ch, CURLOPT_POSTFIELDS, json_encode($postData) );
+			curl_setopt ( $ch, CURLOPT_POSTFIELDS, json_encode ( $postData ) );
 			$httpHeaders [] = "Content-Type: application/json";
 		}
 		if ($method) {
@@ -514,7 +543,7 @@ class rackDNS {
 
 		$jsonResponse = curl_exec ( $ch );
 		curl_close ( $ch );
-				
+
 		return json_decode ( $jsonResponse, TRUE );
 	}
 
@@ -527,7 +556,7 @@ class rackDNS {
 	 * @return integer The number of bytes in the header line
 	 */
 	private function parseHeader($ch, $header) {
-		
+
 		preg_match ( "/^HTTP\/1\.[01] (\d{3}) (.*)/", $header, $matches );
 		if (isset ( $matches [1] )) {
 			$this->lastResponseStatus = $matches [1];
@@ -560,6 +589,7 @@ class rackDNS {
 		$url = $this->authEndpoint . '/' . rawurlencode ( "v" . self::DEFAULT_DNS_API_VERSION );
 
 		curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, True );
+
 		//   curl_setopt($ch, CURLOPT_CAINFO,dirname(dirname(__FILE__)) . "/share/cacert.pem");
 		curl_setopt ( $ch, CURLOPT_FOLLOWLOCATION, 1 );
 		curl_setopt ( $ch, CURLOPT_MAXREDIRS, 4 );
@@ -582,6 +612,7 @@ class rackDNS {
 				$this->account_id = array_pop ( $account );
 				// TODO Replace this with parsing the correct one once the Load Balancer API goes public
 				//$this->apiEndpoint = self::UK_DNS_ENDPOINT; // "https://ord.loadbalancers.api.rackspacecloud.com/v1.0/425464";
+
 
 				preg_match ( "/X-Auth-Token: (.*)/", $response, $matches );
 				$this->authToken = trim ( $matches [1] );
