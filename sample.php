@@ -6,6 +6,7 @@
  * @copyright CoolGeex.com
  */
 
+
 $sampleImport = "coolgeex0007.com.      3600 	IN	SOA	ns.rackspace.com. sample@coolgeex0007.com. 1308874739 3600 3600 3600 3600
 coolgeex0007.com.		86400	IN	A	110.11.12.16
 coolgeex0007.com.		3600	IN	MX	5 mail2.coolgeex0007.com.

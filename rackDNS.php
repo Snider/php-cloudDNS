@@ -2,8 +2,8 @@
 /**
  *
  * Rackspace DNS PHP API ...
- * @author paul
- * @copyright Original Webware Limited
+ * @author Alon Ben David & paul
+ * @copyright CoolGeex.com
  * @contributor Alon Ben David @ CoolGeex.com (Now supports US API)
  * 	-	Changes: 
  *				Class name now rackDNS
