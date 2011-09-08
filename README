@@ -22,6 +22,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/gpl-3.0.txt>.
 
 CHANGES 
 
+08/11/2011 Paul Lashbrook
+- added import_domain()
+- added alias function delete_domain()
+- relaxed data type checking
+- fixed callback waiting until timeout
+
 30/08/2011 Alon Ben David @ CoolGeex.com
 - Class name now rackDNS
 - callback function to cycle through registered call backs with timeout in place
@@ -67,15 +73,18 @@ $dns->modify_domain($sampleID,'info@domain.com'); //($domainID = false , $email 
 
 $dns->delete_domains($sampleID);
 
-delete_domain_record($domainID,$recordID)
+$dns->delete_domain_record($domainID,$recordID)
 
-list_domain_details($domainID = false, $showRecords = false, $showSubdomains = false);
+$dns->list_domain_details($domainID = false, $showRecords = false, $showSubdomains = false);
 
-create_domain($name = false, $email = false, $records = array())
 
-create_domain_record($domainID = false, $records = array())
+$dns->import_domain('domain.com');
 
-create_domain_record_helper($type = false, $name = false, $data = false, $ttl = 86400, $priority = false)
+$dns->create_domain($name = false, $email = false, $records = array());
+
+$dns->create_domain_record($domainID = false, $records = array());
+
+$dns->create_domain_record_helper($type = false, $name = false, $data = false, $ttl = 86400, $priority = false);
 
 $dns->getLastResponseStatus(); //returns status code
 $dns->getLastResponseMessage();//returns status message
