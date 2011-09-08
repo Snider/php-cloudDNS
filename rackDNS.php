@@ -179,7 +179,7 @@ class rackDNS {
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
 	public function delete_domain_record($domainID, $recordID) {
-		if (($domainID == false || ! is_numeric ( $domainID ) || $recordID == false) {
+		if ($domainID == false || ! is_numeric ( $domainID ) || $recordID == false) {
 			return false;
 		}
 
@@ -201,13 +201,24 @@ class rackDNS {
 	}
 
 	/**
+	 *
+	 * alias function for delete_domains()
+	 * @param integer $domainID or an Array on domains ID's
+	 * @param unknown_type $deleteSubdomains
+	 * @return boolean|Ambigous <multitype:, NULL, mixed>
+	 */
+	public function delete_domain($domainID, $deleteSubdomains = true){
+		return $this->delete_domains($domainID, $deleteSubdomains);
+	}
+
+	/**
 	 * Delete domain DNS records entirely
 	 * @param integer $domainID or an Array on domains ID's
 	 * @param unknown_type $deleteSubdomains
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
 	public function delete_domains($domainID, $deleteSubdomains = true) {
-		if ($domainID == false || (! is_int ( $domainID ) && ! is_array ( $domainID ))) {
+		if ($domainID == false || (! is_numeric ( $domainID ) && ! is_array ( $domainID ))) {
 			return false;
 		}
 
@@ -315,7 +326,7 @@ class rackDNS {
 	 * @return boolean|array
 	 */
 	public function modify_domain($domainID = false, $email = false, $ttl = 86400, $comment = null) {
-		if ($domainID == false || ! is_numeric ( $domainID ) || ! is_int ( $ttl ) || $ttl < 300) {
+		if ($domainID == false || ! is_numeric ( $domainID ) || ! is_numeric ( $ttl ) || $ttl < 300) {
 			return false;
 		}
 
@@ -480,7 +491,7 @@ class rackDNS {
 	 */
 	public function create_domain_record_helper($type = false, $name = false, $data = false, $ttl = 86400, $priority = false) {
 
-		if (! $type || ! $name || ! $data || ! is_int ( $ttl )) {
+		if (! $type || ! $name || ! $data || ! is_numeric ( $ttl )) {
 			return false;
 		}
 
