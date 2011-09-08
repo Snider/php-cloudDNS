@@ -134,7 +134,7 @@ class rackDNS {
 	 * @return boolean|Ambiguous <multitype:, NULL, mixed>
 	 */
 	public function list_subdomains($domainID) {
-		if ($domainID == false || ! is_int ( $domainID )) {
+		if ($domainID == false || ! is_numeric ( $domainID )) {
 			return false;
 		}
 
@@ -149,7 +149,7 @@ class rackDNS {
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
 	public function list_records($domainID) {
-		if ($domainID == false || ! is_int ( $domainID )) {
+		if ($domainID == false || ! is_numeric ( $domainID )) {
 			return false;
 		}
 
@@ -164,7 +164,7 @@ class rackDNS {
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
 	public function list_record_details($domainID, $recordID) {
-		if ($domainID == false || ! is_int ( $domainID ) || $recordID == false) {
+		if ($domainID == false || ! is_numeric ( $domainID ) || $recordID == false) {
 			return false;
 		}
 
@@ -179,7 +179,7 @@ class rackDNS {
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
 	public function delete_domain_record($domainID, $recordID) {
-		if (($domainID == false || ! is_int ( $domainID ) )|| $recordID == false) {
+		if (($domainID == false || ! is_numeric ( $domainID ) || $recordID == false) {
 			return false;
 		}
 
@@ -267,7 +267,7 @@ class rackDNS {
 	 * @param bool $showSubdomains
 	 */
 	public function list_domain_details($domainID = false, $showRecords = false, $showSubdomains = false) {
-		if ($domainID == false || ! is_int ( $domainID )) {
+		if ($domainID == false || ! is_numeric ( $domainID )) {
 			return false;
 		}
 
@@ -285,7 +285,7 @@ class rackDNS {
 	 * @return boolean|array
 	 */
 	public function domain_export($domainID = false) {
-		if ($domainID == false || ! is_int ( $domainID )) {
+		if ($domainID == false || ! is_numeric ( $domainID )) {
 			return false;
 		}
 
@@ -315,7 +315,7 @@ class rackDNS {
 	 * @return boolean|array
 	 */
 	public function modify_domain($domainID = false, $email = false, $ttl = 86400, $comment = null) {
-		if ($domainID == false || ! is_int ( $domainID ) || ! is_int ( $ttl ) || $ttl < 300) {
+		if ($domainID == false || ! is_numeric ( $domainID ) || ! is_int ( $ttl ) || $ttl < 300) {
 			return false;
 		}
 
