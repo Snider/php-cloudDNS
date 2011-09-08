@@ -179,7 +179,7 @@ class rackDNS {
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
 	public function delete_domain_record($domainID, $recordID) {
-		if ($domainID == false || ! is_int ( $domainID ) || $recordID == false) {
+		if (($domainID == false || ! is_int ( $domainID ) )|| $recordID == false) {
 			return false;
 		}
 
@@ -188,7 +188,7 @@ class rackDNS {
 
 		$timeout = time () + self::TIMEOUT;
 
-		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
+		while ( $call ['status'] == 'RUNNING' && $timeout > time () ) {
 			$this->callbacks [] = $call;
 			usleep ( self::SLEEPTIME );
 
@@ -228,7 +228,7 @@ class rackDNS {
 
 		$timeout = time () + self::TIMEOUT;
 
-		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
+		while ( $call ['status'] == 'RUNNING' && $timeout > time () ) {
 			$this->callbacks [] = $call;
 			usleep ( self::SLEEPTIME );
 			$url = explode ( 'status', $call ['callbackUrl'] );
@@ -294,7 +294,7 @@ class rackDNS {
 
 		$timeout = time () + self::TIMEOUT;
 
-		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
+		while ( $call ['status'] == 'RUNNING' && $timeout > time () ) {
 
 			$this->callbacks [] = $call;
 			usleep ( self::SLEEPTIME );
@@ -333,7 +333,7 @@ class rackDNS {
 
 		$timeout = time () + self::TIMEOUT;
 
-		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
+		while ( $call ['status'] == 'RUNNING' && $timeout > time () ) {
 			$this->callbacks [] = $call;
 			usleep ( self::SLEEPTIME );
 
@@ -381,7 +381,7 @@ class rackDNS {
 
 		$timeout = time () + self::TIMEOUT;
 
-		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
+		while ( $call ['status'] == 'RUNNING' && $timeout > time () ) {
 			$this->callbacks [] = $call;
 			usleep ( self::SLEEPTIME );
 			$url = explode ( 'status', $call ['callbackUrl'] );
@@ -399,7 +399,7 @@ class rackDNS {
 	 * @param unknown_type $records
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
-	public function create_domain($name = false, $email = false, $records = false) {
+	public function create_domain($name = false, $email = false, $records = false, $showDetails = false) {
 		if (! $email || ! $name || ! is_array ( $records )) {
 			return false;
 		}
@@ -414,18 +414,23 @@ class rackDNS {
 
 		$url = '/domains';
 
+		$url .= $showDetails == true ? '?showDetails=true' : '';
+
 		$call = $this->makeApiCall ( $url, $postData, 'POST' );
 
 		//@todo make callback function to cycle through registered call backs
 		$timeout = time () + self::TIMEOUT;
 
-		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
+		while ( $call ['status'] == 'RUNNING'  && $timeout > time () ) {
 			$this->callbacks [] = $call;
 			usleep ( self::SLEEPTIME );
 
 			$url = explode ( 'status', $call ['callbackUrl'] );
 
-			$call = $this->makeApiCall ( '/status' . array_pop ( $url ) );
+			$url = array_pop ( $url );
+			$url .= $showDetails == true ? '?showDetails=true' : '';
+
+			$call = $this->makeApiCall ( '/status' . $url );
 
 		}
 		return $call;
@@ -452,7 +457,7 @@ class rackDNS {
 		//@todo make callback function to cycle through registered call backs
 		$timeout = time () + self::TIMEOUT;
 
-		while ( isset ( $call ['callbackUrl'] ) && $timeout > time () ) {
+		while ( $call ['status'] == 'RUNNING' && $timeout > time () ) {
 			$this->callbacks [] = $call;
 			usleep ( self::SLEEPTIME );
 
