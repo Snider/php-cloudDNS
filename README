@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/gpl-3.0.txt>.
 
 CHANGES 
 
-08/11/2011 Paul Lashbrook
+08/09/2011 Paul Lashbrook
 - added import_domain()
 - added alias function delete_domain()
 - relaxed data type checking
