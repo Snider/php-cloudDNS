@@ -101,8 +101,8 @@ class rackDNS {
 	 * using this object.
 	 *
 	 * @todo add a callback function so if one wanted they could call back minutes or
-	 * 		 hours later as result is saved for 24 hours... could internally use it with an
-	 * 		 option to just return the callback url for the programmer to use later
+	 * hours later as result is saved for 24 hours... could internally use it with an
+	 * option to just return the callback url for the programmer to use later
 	 *
 	 *
 	 * @param string $user The username of the account to use
@@ -207,8 +207,8 @@ class rackDNS {
 	 * @param unknown_type $deleteSubdomains
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
-	public function delete_domain($domainID, $deleteSubdomains = true){
-		return $this->delete_domains($domainID, $deleteSubdomains);
+	public function delete_domain($domainID, $deleteSubdomains = true) {
+		return $this->delete_domains ( $domainID, $deleteSubdomains );
 	}
 
 	/**
@@ -432,7 +432,7 @@ class rackDNS {
 		//@todo make callback function to cycle through registered call backs
 		$timeout = time () + self::TIMEOUT;
 
-		while ( $call ['status'] == 'RUNNING'  && $timeout > time () ) {
+		while ( $call ['status'] == 'RUNNING' && $timeout > time () ) {
 			$this->callbacks [] = $call;
 			usleep ( self::SLEEPTIME );
 
@@ -505,6 +505,41 @@ class rackDNS {
 			$record ['priority'] = ( string ) $priority;
 		}
 		return $record;
+	}
+
+	/**
+	 *
+	 * Moves dns settings from a live domain ...
+	 * @param unknown_type $url
+	 */
+	public function import_domain($url) {
+
+		if (! $url) {
+			return false;
+		}
+
+		$records = dns_get_record ( $url, DNS_ANY, $authns, $addtl );
+
+		foreach ( $records as $record ) {
+			if ($record ['type'] == 'MX') {
+				$zone [] = $this->create_domain_record_helper ( 'MX', $url, $record ['target'], $record ['ttl'], $record ['pri'] );
+			} elseif ($record ['type'] == 'A') {
+				$zone [] = $this->create_domain_record_helper ( 'A', $url, $record ['ip'], $record ['ttl'] );
+			} elseif ($record ['type'] == 'AAAA') {
+				$zone [] = $this->create_domain_record_helper ( 'AAAA', $url, $record ['ipv6'], $record ['ttl'] );
+			} elseif ($record ['type'] == 'NS') {
+				$zone [] = $this->create_domain_record_helper ( 'NS', $url, $record ['target'], $record ['ttl'] );
+			} elseif ($record ['type'] == 'CNAME') {
+				$zone [] = $this->create_domain_record_helper ( 'CNAME', $url, $record ['target'], $record ['ttl'] );
+			} elseif ($record ['type'] == 'TXT') {
+				$zone [] = $this->create_domain_record_helper ( 'TXT', $url, $record ['txt'], $record ['ttl'] );
+			} elseif ($record ['type'] == 'SOA') {
+				$email = implode ( '@', explode ( '.', $record ['rname'], 2 ) );
+			}
+
+		}
+
+		return $this->create_domain ( $url, $email, $zone, true );
 	}
 
 	/**
