@@ -410,8 +410,8 @@ class rackDNS {
 	 * @param unknown_type $records
 	 * @return boolean|Ambigous <multitype:, NULL, mixed>
 	 */
-	public function create_domain($name = false, $email = false, $records = false, $showDetails = false) {
-		if (! $email || ! $name || ! is_array ( $records )) {
+	public function create_domain($name = false, $email = false, $records = array(), $showDetails = false) {
+		if (! $email || ! $name ) {
 			return false;
 		}
 
