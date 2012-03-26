@@ -27,8 +27,6 @@
 CHANGES 
 
 26/3/2012 Reported by Zeut, fixed by Paul Lashbrook
-
-08/09/2011 Paul Lashbrook
 - Updated php Docs
 - Added pagination
      list_domains()
@@ -37,6 +35,14 @@ CHANGES
      list_domain_search()
      list_domain_details()
 - search_domains alias added
+
+
+ 08/09/2011 Paul Lashbrook
+- added import_domain()
+- added alias function delete_domain()
+- relaxed data type checking
+- fixed callback waiting until timeout
+
 
 30/08/2011 Alon Ben David @ CoolGeex.com
 - Class name now rackDNS
