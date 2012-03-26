@@ -190,27 +190,6 @@ class rackDNS
         return $this->makeApiCall($url);
     }
 
-    /**
-     * search domain records
-     *
-     * @param string    $domain
-     * @param int       $limit
-     * @param int       $offset
-     *
-     * @return boolean <multitype:, NULL, mixed>
-     */
-    public function search_domains($domain, $limit = 100, $offset = 0)
-    {
-        if ($domain == false || !is_string($domain)) {
-            return false;
-        }
-
-        $domain = urlencode($domain);
-
-        $url = "/domains?name=$domain&limit=$limit&offset=$offset";
-
-        return $this->makeApiCall($url);
-    }
 
     /**
      * List domain specific record
@@ -329,6 +308,9 @@ class rackDNS
      *
      * @param bool|string $domain
      *
+     * @param int         $limit
+     * @param int         $offset
+     *
      * @return array|bool
      */
     public function list_domain_search($domain = false, $limit = 100, $offset = 0)
@@ -343,6 +325,20 @@ class rackDNS
     }
 
     /**
+     * search domain records
+     *
+     * @param string    $domain
+     * @param int       $limit
+     * @param int       $offset
+     *
+     * @return boolean <multitype:, NULL, mixed>
+     */
+    public function search_domains($domain, $limit = 100, $offset = 0)
+    {
+        return $this->list_domain_search($domain, $limit, $offset);
+    }
+
+    /**
      *
      * list domain data by domainID ...
      * List details for a specific domain, using the showRecords and showSubdomains parameters that specify
@@ -351,6 +347,9 @@ class rackDNS
      * @param bool|int $domainID
      * @param bool     $showRecords
      * @param bool     $showSubdomains
+     *
+     * @param int      $limit
+     * @param int      $offset
      *
      * @return array|bool
      */
