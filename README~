@@ -67,11 +67,6 @@ PLEASE NOTE: any help suggestions/requests welcome
 Server communication code originally from and slightly adapted,
 thanks to the work of that author making this was relatively easy
 
-you made get errors trying to establish an ssl conection to rackspace,
-if you get this you have a old version of Curl installed meaning the CA list is outdated.
-
-just run $dns->set_cabundle(true); before you try to do a API action
-
 @link http://snider.github.com/php-cloudDNS/
 via https://github.com/eyecreate/Rackspace-Cloud-PHP-Library
 

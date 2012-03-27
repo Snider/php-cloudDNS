@@ -1,0 +1,35 @@
+10
+
+dir
+0
+https://platform.workstationcommerce.com/svn/trunk/workstation_files/classes/libs/rackspace/dns/share
+https://platform.workstationcommerce.com/svn
+add
+
+
+
+
+
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+f9ac8970-f513-425f-b3c2-0b39b1554185
+
+cacert.pem
+file
+
+
+
+add
+

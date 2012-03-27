@@ -41,8 +41,6 @@ class rackDNS
     private $lastResponseStatus;
     private $callbacks = array();
 
-    private $cacert = null;
-
     /**
      * Timeout in seconds for an API call to respond
      *
@@ -665,14 +663,6 @@ class rackDNS
         return $this->create_domain($url, $email, $zone, true);
     }
 
-    public function set_cabundle($path = null)
-    {
-
-        if (!is_null($path)) {
-            $this->cacert = $path;
-        }
-    }
-
     /**
      * Makes a call to an API
      *
@@ -727,18 +717,14 @@ class rackDNS
                                               'parseHeader'
                                          )
         );
-        if (!is_null($this->cacert)) {
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-            curl_setopt($ch, CURLOPT_CAINFO, dirname(dirname(__FILE__)) . "/share/cacert.pem");
-        }
         curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate');
         curl_setopt($ch, CURLOPT_TIMEOUT, self::TIMEOUT);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 
         $jsonResponse = curl_exec($ch);
         curl_close($ch);
 
-        return json_decode($jsonResponse, true);
+        return json_decode($jsonResponse, TRUE);
     }
 
     /**
@@ -788,10 +774,8 @@ class rackDNS
         $url = $this->authEndpoint . '/' . rawurlencode("v" . self::DEFAULT_DNS_API_VERSION);
 
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, True);
-        if (!is_null($this->cacert)) {
-                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-                    curl_setopt($ch, CURLOPT_CAINFO, dirname(dirname(__FILE__)) . "/share/cacert.pem");
-                }
+
+        //   curl_setopt($ch, CURLOPT_CAINFO,dirname(dirname(__FILE__)) . "/share/cacert.pem");
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_MAXREDIRS, 4);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $authHeaders);
@@ -882,4 +866,3 @@ class rackDNS
     }
 
 }
-
