@@ -28,7 +28,7 @@ CHANGES
 
 27/3/2012 Reported by Zeut
 - fixed a ssl peer veify error for people with old versions of curl
-	rather than use the new function 
+	
 
 26/3/2012 Reported by Zeut, fixed by Paul Lashbrook
 - Updated php Docs
