@@ -1,5 +1,8 @@
 <?php
 /**
+ * NOTE: THE API OF THE create_domain() FUNCTION HAS BEEN UPDATED AND YOU WILL NEED TO UPDATE ITS USE IN YOUR CODE
+ *
+ *
  * Rackspace DNS PHP API ...
  *
  * This PHP Libary is supported by Original Webware Limited
@@ -25,8 +28,8 @@
  *
  * @contributor Alon Ben David @ CoolGeex.com
  * @contributor zeut @ GitHub - reported a fix for limiting... totally forgot that bit!
- *
- */
+ * @contributor idfbobby @ github - updated the create_domain() function to include comments and ttl
+ */ 
 
 class rackDNS
 {
@@ -502,49 +505,48 @@ class rackDNS
      *
      * @param bool|string $name
      * @param bool|string $email
+     * @param bool        $comment
+     * @param int         $ttl
      * @param array       $records
      *
      * @param bool        $showDetails
      *
-     * @return boolean|Ambigous <multitype:, NULL, mixed>
+     * @return boolean <multitype:, NULL, mixed>
      */
-    public function create_domain($name = false, $email = false, $records = array(), $showDetails = true)
-    {
-        if (!$email || !$name) {
+    public function create_domain($name = false, $email = false, $comment = false, $ttl = 3600, $records = array(),     $showDetails = false) {
+        if (! $email || ! $name ) {
             return false;
         }
 
-        $postData = array(
-            'domains' => array(
-                array(
-                    'name'         => $name,
-                    'emailAddress' => $email,
-                    'recordsList'  => array(
-                        'records' => $records
-                    )
-                )
-            )
-        );
+        $postData = array (
+                'domains' => array (
+                        array (
+                                'name' => $name,
+                                'emailAddress' => $email,
+                                'ttl' => $ttl,
+                                'comment' => $comment,
+                                'recordsList' => array (
+                                        'records' => $records ) ) ) );
 
         $url = '/domains';
 
-        // $url .= $showDetails == true ? '?showDetails=true' : '';
+        $url .= $showDetails == true ? '?showDetails=true' : '';
 
-        $call = $this->makeApiCall($url, $postData, 'POST');
+        $call = $this->makeApiCall ( $url, $postData, 'POST' );
 
         //@todo make callback function to cycle through registered call backs
-        $timeout = time() + self::TIMEOUT;
+        $timeout = time () + self::TIMEOUT;
 
-        while ($call ['status'] == 'RUNNING' && $timeout > time()) {
+        while ( $call ['status'] == 'RUNNING' && $timeout > time () ) {
             $this->callbacks [] = $call;
-            usleep(self::SLEEPTIME);
+            usleep ( self::SLEEPTIME );
 
-            $url = explode('status', $call ['callbackUrl']);
+            $url = explode ( 'status', $call ['callbackUrl'] );
 
-            $url = array_pop($url);
+            $url = array_pop ( $url );
             $url .= $showDetails == true ? '?showDetails=true' : '';
 
-            $call = $this->makeApiCall('/status' . $url);
+            $call = $this->makeApiCall ( '/status' . $url );
 
         }
         return $call;

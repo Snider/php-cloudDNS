@@ -111,5 +111,23 @@ $dns->create_domain_record($domainID = false, $records = array());
 
 $dns->create_domain_record_helper($type = false, $name = false, $data = false, $ttl = 86400, $priority = false);
 
+example use:
+
+$dns = new rackDNS(RS_USER,RS_API_KEY);
+
+// make a new dns zone
+  $records = array($dns->create_domain_record_helper('MX','originalwebware.com','mail.originalwebware.com',86400,2),
+  					$dns->create_domain_record_helper('a','originalwebware.com','192.168.0.1',86400));
+  name, email, comment, ttl, records
+  $results = $dns->create_domain('originalwebware.com', 'paul@originalwebware.com', 'a comment', 3600, $records);
+ 
+ // add a new record(s) to a dns zone
+  $records = array($dns->create_domain_record_helper('MX','originalwebware.co.uk','mail.originalwebware.co.uk',86400,2),
+ 					$dns->create_domain_record_helper('a','originalwebware.co.uk','192.168.0.1',86400));
+ $results = $dns->create_domain_record(123456,$records);
+ 
+
+
+
 $dns->getLastResponseStatus(); //returns status code
 $dns->getLastResponseMessage();//returns status message
