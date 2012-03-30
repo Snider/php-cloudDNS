@@ -367,7 +367,7 @@ class rackDNS
         }
 
         $showRecords = ($showRecords == false) ? 'false' : 'true';
-        $showRecords = ($showSubdomains == false) ? 'false' : 'true';
+        $showSubRecords = ($showSubdomains == false) ? 'false' : 'true';
 
         $url = "/domains/$domainID?showRecords=$showRecords&showSubdomains=$showSubdomains&limit=$limit&offset=$offset";
 
