@@ -8,7 +8,7 @@
  * This PHP Libary is supported by Original Webware Limited
  *  please register any issues to: https://github.com/snider/php-cloudDNS/issues/
  *
- * Copyright (C) 2011  Original Webware Limited
+ * Copyright (C) 2011 Paul Lashbrook
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
