@@ -568,7 +568,7 @@ class rackDNS
         }
 
         $postData = array(
-            'records' => $records
+            'records' => array($records)
         );
 
         $url = "/domains/$domainID/records";
