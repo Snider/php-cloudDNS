@@ -401,7 +401,11 @@ class rackDNS
 
             $call = $this->makeApiCall('/status' . array_pop($url));
         }
-        return $call;
+        
+        $callbackUrl = $call['callbackUrl'];
+        $results     = $this->makeCallback($callbackUrl, true);
+        return $results;
+        //return $call;
     }
 
     /**
@@ -740,6 +744,58 @@ class rackDNS
         $jsonResponse = curl_exec($ch);
         curl_close($ch);
 
+        return json_decode($jsonResponse, true);
+    }
+    
+    /**
+     * Makes a call to the callbackUrl returned from an API call
+     *
+     * @param string $url      The callbackUrl to call
+     */
+    private function makeCallback($url = false, $showDetails = false)
+    {
+        if (! $url) {
+            return false;
+        }
+
+        // Authenticate if necessary
+        if (!$this->isAuthenticated()) {
+            if (!$this->authenticate()) {
+                return NULL;
+            }
+        }
+
+        $this->lastResponseStatus = NULL;
+
+        if ($showDetails) {
+            $url .= "?showDetails=true";
+        }
+
+        $httpHeaders = array(
+            "X-Auth-Token: {$this->authToken}"
+        );
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $httpHeaders);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_USERAGENT, self::USER_AGENT);
+        curl_setopt(
+            $ch, CURLOPT_HEADERFUNCTION, array(
+                                              &$this,
+                                              'parseHeader'
+                                         )
+        );
+        if (!is_null($this->cacert)) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_CAINFO, dirname(dirname(__FILE__)) . "/share/cacert.pem");
+        }
+        curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate');
+        curl_setopt($ch, CURLOPT_TIMEOUT, self::TIMEOUT);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $jsonResponse = curl_exec($ch);
+        curl_close($ch);
         return json_decode($jsonResponse, true);
     }
 
