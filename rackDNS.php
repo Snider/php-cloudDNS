@@ -51,7 +51,7 @@ class rackDNS
      *
      * @var integer
      */
-    const TIMEOUT = 20;
+    const TIMEOUT = 300;
 
     /**
      * Timeout in micro_seconds between API calls
