@@ -867,11 +867,15 @@ class rackDNS
                 preg_match("/X-Server-Management-Url: (.*)/", $response, $matches);
                 $this->serverUrl = trim($matches [1]);
 
-                $account = explode('/', $this->serverUrl);
-                $this->account_id = array_pop($account);
-                // TODO Replace this with parsing the correct one once the Load Balancer API goes public
-                //$this->apiEndpoint = self::UK_DNS_ENDPOINT; // "https://ord.loadbalancers.api.rackspacecloud.com/v1.0/425464";
-
+                if ($this->serverUrl) {
+                    $account = explode('/', $this->serverUrl);
+                    $this->account_id = array_pop($account);
+                } else {
+                    preg_match("/X-CDN-Management-Url: (.*)/", $response, $matches);
+                    $this->serverUrl = trim($matches [1]);
+                    $account = explode('_', $this->serverUrl);
+                    $this->account_id = array_pop($account);
+                }
 
                 preg_match("/X-Auth-Token: (.*)/", $response, $matches);
                 $this->authToken = trim($matches [1]);
