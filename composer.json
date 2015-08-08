@@ -1,0 +1,31 @@
+{
+    "name": "snider/php-cloud-dns",
+    "description": "A PHP Binding to the Rackspace Cloud DNS API Created for my own use, since no public php API lib was out at that time available.",
+    "version": "1.0.0",
+    "type": "library",
+    "keywords": [
+        "rackspace",
+        "cloud",
+        "cloud dns"
+    ],
+    "minimum-stability": "stable",
+    "license": "GPL-3.0",
+    "autoload": {
+        "psr-0": {
+            "": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Paul Lashbrook",
+            "email": "lashbrook.paul@gmail.com",
+            "role": "developer"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/snider/php-cloudDNS"
+        }
+    ]
+}
