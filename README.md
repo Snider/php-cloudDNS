@@ -1,4 +1,11 @@
- NOTE CURRENT USERS: please update your lib to the newer version to cater for new style accounts, many thanks to @diegoiglesias
+ == Project Spring Clean ==
+ 
+ It is time for this lirary to get updated so it is a little more modern, when it was made things were just done diffrently.
+ If you have a idea, im open to impliment it... if you look at my history of acepting pull requests i have a 100% aceptance rate
+ so please dont fork and run with this on your own... if you want i will just add you as a developer once you have done a few pull requests.
+ 
+ during project Spring Clean i want to use getters for listing records, namespace the project, add a PSR-3 style logger,
+ adopt PSR-1/PSR-2 and debating with myself if a trait would be handy... not sure tho its not like a file storage system, any thoughts?
  
  Rackspace DNS PHP API ...
  
