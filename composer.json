@@ -20,6 +20,26 @@
             "name": "Paul Lashbrook",
             "email": "lashbrook.paul@gmail.com",
             "role": "developer"
+        },
+        {
+            "name": "Alon Ben David",
+            "url": "https://github.com/alonbendavid",
+            "role": "developer"
+        },
+        {
+            "name": "Linus",
+            "url": "https://github.com/dotcomfy",
+            "role": "contributor"
+        },
+        {
+            "name": "Diego Iglesias",
+            "url": "https://github.com/diegoiglesias",
+            "role": "contributor"
+        },
+        {
+            "name": "Mark Loker",
+            "url": "https://github.com/marklocker",
+            "role": "contributor"
         }
     ],
     "repositories": [
