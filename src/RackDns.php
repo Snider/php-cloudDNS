@@ -1,4 +1,5 @@
-<?php
+<?php namespace Snider\CloudDns;
+
 /**
  * NOTE: THE API OF THE create_domain() FUNCTION HAS BEEN UPDATED AND YOU WILL NEED TO UPDATE ITS USE IN YOUR CODE
  *
@@ -29,9 +30,9 @@
  * @contributor Alon Ben David @ CoolGeex.com
  * @contributor zeut @ GitHub - reported a fix for limiting... totally forgot that bit!
  * @contributor idfbobby @ github - updated the create_domain() function to include comments and ttl
- */ 
+ */
 
-class rackDNS
+class RackDns
 {
 
     private $apiEndpoint;
@@ -401,7 +402,7 @@ class rackDNS
 
             $call = $this->makeApiCall('/status' . array_pop($url));
         }
-        
+
         $callbackUrl = $call['callbackUrl'];
         $results     = $this->makeCallback($callbackUrl, true);
         return $results;
@@ -746,7 +747,7 @@ class rackDNS
 
         return json_decode($jsonResponse, true);
     }
-    
+
     /**
      * Makes a call to the callbackUrl returned from an API call
      *
@@ -944,4 +945,3 @@ class rackDNS
     }
 
 }
-
