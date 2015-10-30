@@ -40,6 +40,11 @@
             "name": "Mark Loker",
             "url": "https://github.com/marklocker",
             "role": "contributor"
+        },
+        {
+            "name": "Alex Shepherd",
+            "url": "https://github.com/alexshepherd-hydrant",
+            "role": "contributor"
         }
     ],
     "repositories": [
