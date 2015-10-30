@@ -11,8 +11,8 @@
     "minimum-stability": "stable",
     "license": "GPL-3.0",
     "autoload": {
-        "psr-0": {
-            "": "src/"
+        "psr-4": {
+            "Snider\\CloudDns\\": "src/"
         }
     },
     "authors": [
